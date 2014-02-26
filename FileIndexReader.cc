@@ -47,12 +47,23 @@ FileIndexReader::FileIndexReader(std::string filename,
 
   // Read the entire file header and convert to host format.
   // MISSING:
-  IndexFileHeader header_;
-  size_t res;
+
+/*
   uint32_t magic_number, checksum;
   HWSize_t doctable_size, index_size;
 
-  res = fread(&header_, 16, 1, file_); // read magic number
+  res = fread(&magic_number, 4, 1, file_); // read magic number
+  Verify333(res == 1);
+  res = fread(&checksum, 4, 1, file_);
+  Verify333(res == 1);
+  res = fread(&doctable_size, 4, 1, file_);
+  Verify333(res == 1);
+  res = fread(&index_size, 4, 1, file_);
+  Verify333(res == 1);
+  header_ = {magic_number, checksum, doctable_size, index_size};
+*/
+  size_t res;
+  res = fread(&header_, 16, 1, file_);
   Verify333(res == 1);
   header_.toHostFormat();
 
@@ -67,9 +78,6 @@ FileIndexReader::FileIndexReader(std::string filename,
             (HWSize_t) (sizeof(IndexFileHeader) +
                         header_.doctable_size +
                         header_.index_size));
-printf("doctable size = %d\n", header_.doctable_size);
-printf("index size = %d\n", header_.index_size);
-printf("fstat size = %d\n", f_stat.st_size);
   if (validate) {
     // Re-calculate the checksum, make sure it matches that in the header.
     // Use fread() and pass the bytes you read into the crcobj.
@@ -78,22 +86,14 @@ printf("fstat size = %d\n", f_stat.st_size);
     CRC32 crcobj;
     uint8_t buf[512];
     HWSize_t left_to_read = header_.doctable_size + header_.index_size;
-printf("left to read = %d\n", left_to_read);      
-  while (left_to_read > 0) {
+    while (left_to_read > 0) {
       // MISSING:
+// SHOULD I BE USING BUF???      
       uint8_t next;
       size_t read = fread(&next, sizeof(char), 1, file_);
-      //printf("%d\n", left_to_read);
-      if (read != 1) {
-        //do something
-        printf("should i crash here...");
-        Verify333(read == 1);
-      }
+      Verify333(read == 1);
       crcobj.FoldByteIntoCRC(next);
       left_to_read--;
-    }
-    if (crcobj.GetFinalCRC() == header_.checksum) {
-      printf("hooray!!!\n");
     }
     Verify333(crcobj.GetFinalCRC() == header_.checksum);
   }
