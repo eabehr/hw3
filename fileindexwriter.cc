@@ -183,8 +183,9 @@ static HWSize_t WriteDocidDocnameFn(FILE *f,
   // fwrite() the filename.  We don't write the null-terminator from
   // the string, just the characters.
   // MISSING: CHECK
-  res = fwrite(filename, (size_t) slen_ho, 1, f);
-  if (res != 1) {
+  res = fwrite(filename, sizeof(char), slen_ho, f);
+  if (res != slen_ho) {
+printf("a return 0\n");
     return 0;
   }
 
@@ -227,10 +228,12 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
   docid_element_header_st header = {docID_ho, num_pos_ho};
   header.toDiskFormat();
   if (fseek(f, offset, SEEK_SET) != 0) {
+printf("b return 0\n");
     return 0;
   }
   res = fwrite(&header, sizeof(header), 1, f);
   if (res != 1) {
+printf("c return 0\n");
     return 0;
   }
 
@@ -256,6 +259,7 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
     // &payload or &pos.position ???
     res = fwrite(&payload, sizeof(uint32_t), 1, f);
     if (res != 1) {
+printf("d return 0\n");
       return 0;
     }
 
@@ -301,6 +305,7 @@ static HWSize_t WriteWordDocSetFn(FILE *f,
   // MISSING:
   header.toDiskFormat();
   if (fseek(f, offset, SEEK_SET) != 0) {
+printf("e return 0\n");
     return 0;
   }
   res = fwrite(&header, sizeof(header), 1, f);
@@ -313,6 +318,7 @@ static HWSize_t WriteWordDocSetFn(FILE *f,
   // MISSING:
   res = fwrite(wds->word, (size_t) wordlen_ho, 1, f);
   if (res != 1) {
+printf("f return 0\n");
     return 0;
   }
 
@@ -352,6 +358,7 @@ static HWSize_t WriteHeader(FILE *f,
   IndexFileOffset_t offset = sizeof(header); // should equal 16???
   int seek = fseek(f, offset, SEEK_SET);
   if (seek != 0) {
+printf("g return 0\n");
     return 0;
   } 
 
@@ -405,6 +412,7 @@ static HWSize_t WriteBucketRecord(FILE *f,
   // MISSING:
   res = fwrite(&br, sizeof(bucket_rec), 1, f);
   if (res != 1) {
+printf("h return 0\n");
     return 0;
   }
 
@@ -447,7 +455,7 @@ static HWSize_t WriteBucket(FILE *f,
       epr.toDiskFormat();
       res = fwrite(&epr, sizeof(element_position_rec), 1, f);
       if (res != 1) {
-        printf("returning 0\n");
+printf("i return 0\n");        
         return 0;
       }
 
@@ -514,17 +522,18 @@ static HWSize_t WriteHashTable(FILE *f,
   for (i = 0; i < ht->num_buckets; i++) {
     // MISSING:
 
-    // do I need to seek???
-    // buckets[i] or *ht->buckets???
+      // do I need to seek???
       res = WriteBucketRecord(f, ht->buckets[i], next_bucket_rec_offset, next_bucket_offset);
       if (res == 0) {
+        printf("j return 0\n");
         return 0;
       }
-  // do i need to seek?
+      // do i need to seek?
       next_bucket_rec_offset += res;
       if (NumElementsInLinkedList(ht->buckets[i]) > 0) {
         res = WriteBucket(f, ht->buckets[i], next_bucket_offset, fn);
         if (res == 0) {
+          printf("h return 0\n");        
           return 0;
         }
         next_bucket_offset += res;
