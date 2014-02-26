@@ -257,7 +257,7 @@ printf("c return 0\n");
 // THIS MIGHT ALSO BE TOTALLY WRONG!    
     // do i need to cast & truncate if docpositionoffset_t = uint32_t? (memindex.h)
     // &payload or &pos.position ???
-    res = fwrite(&payload, sizeof(uint32_t), 1, f);
+    res = fwrite(&pos, sizeof(docid_element_position), 1, f);
     if (res != 1) {
 printf("d return 0\n");
       return 0;
@@ -308,8 +308,8 @@ static HWSize_t WriteWordDocSetFn(FILE *f,
 printf("e return 0\n");
     return 0;
   }
-  res = fwrite(&header, sizeof(header), 1, f);
-  if (res != 0) {
+  res = fwrite(&header, sizeof(worddocset_header), 1, f);
+  if (res != 1) {
     return res;
   }
 
@@ -324,7 +324,7 @@ printf("f return 0\n");
 
   // Calculate and return the total amount of data written.
   // MISSING (fix this return value):
-  return (htlen_ho + (HWSize_t) sizeof(header) + (HWSize_t) wordlen_ho);
+  return (htlen_ho + (HWSize_t) sizeof(worddocset_header) + (HWSize_t) wordlen_ho);
 }
 
 static HWSize_t WriteMemIndex(FILE *f, MemIndex mi, IndexFileOffset_t offset) {
@@ -450,7 +450,10 @@ static HWSize_t WriteBucket(FILE *f,
       HTKeyValue *kv;
 
       // MISSING:
-      //res = fseek(f, offset + j*sizeof(BucketListHeader), SEEK_SET);
+      res = fseek(f, offset + j*sizeof(element_position_rec), SEEK_SET);
+      if (res != 0) {
+        return 0;
+      }
       element_position_rec epr = {nextelpos};
       epr.toDiskFormat();
       res = fwrite(&epr, sizeof(element_position_rec), 1, f);
