@@ -364,7 +364,8 @@ printf("g return 0\n");
 
   for (HWSize_t i = 0; i < cslen; i++) {
     uint8_t next;
-    int read = fread(&next, sizeof(char), 1, f);
+// read is size_t???    
+    size_t read = fread(&next, sizeof(char), 1, f);
     Verify333(read == 1);
     crcobj.FoldByteIntoCRC(next);//verification? using finalized???
   }

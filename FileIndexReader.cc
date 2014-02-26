@@ -42,15 +42,23 @@ FileIndexReader::FileIndexReader(std::string filename,
 
   // Make the (FILE *) be unbuffered.  ("man setbuf")
   // MISSING:
-
+  setbuf(file_, NULL);
+//fopen returns file*
 
   // Read the entire file header and convert to host format.
   // MISSING:
+  IndexFileHeader header_;
+  size_t res;
+  uint32_t magic_number, checksum;
+  HWSize_t doctable_size, index_size;
 
+  res = fread(&header_, 16, 1, file_); // read magic number
+  Verify333(res == 1);
+  header_.toHostFormat();
 
   // Verify that the magic number is correct.  Crash if not.
   // MISSING:
-
+  Verify333(header_.magic_number == 0xCAFEF00D); // should this be class constant???
 
   // Make sure the index file's length lines up with the header fields.
   struct stat f_stat;
@@ -59,7 +67,9 @@ FileIndexReader::FileIndexReader(std::string filename,
             (HWSize_t) (sizeof(IndexFileHeader) +
                         header_.doctable_size +
                         header_.index_size));
-
+printf("doctable size = %d\n", header_.doctable_size);
+printf("index size = %d\n", header_.index_size);
+printf("fstat size = %d\n", f_stat.st_size);
   if (validate) {
     // Re-calculate the checksum, make sure it matches that in the header.
     // Use fread() and pass the bytes you read into the crcobj.
@@ -68,8 +78,22 @@ FileIndexReader::FileIndexReader(std::string filename,
     CRC32 crcobj;
     uint8_t buf[512];
     HWSize_t left_to_read = header_.doctable_size + header_.index_size;
-    while (left_to_read > 0) {
+printf("left to read = %d\n", left_to_read);      
+  while (left_to_read > 0) {
       // MISSING:
+      uint8_t next;
+      size_t read = fread(&next, sizeof(char), 1, file_);
+      //printf("%d\n", left_to_read);
+      if (read != 1) {
+        //do something
+        printf("should i crash here...");
+        Verify333(read == 1);
+      }
+      crcobj.FoldByteIntoCRC(next);
+      left_to_read--;
+    }
+    if (crcobj.GetFinalCRC() == header_.checksum) {
+      printf("hooray!!!\n");
     }
     Verify333(crcobj.GetFinalCRC() == header_.checksum);
   }
