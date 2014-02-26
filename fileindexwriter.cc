@@ -185,7 +185,7 @@ static HWSize_t WriteDocidDocnameFn(FILE *f,
   // MISSING: CHECK
   res = fwrite(filename, (size_t) slen_ho, 1, f);
   if (res != 1) {
-    return 0; // or 1??
+    return 0;
   }
 
   // calculate and return the total amount written.
@@ -242,15 +242,22 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
   for (i = 0; i < num_pos_ho; i++) {
     // Get the next position from the list.
     // MISSING:
-// THIS  MIGHT BE TOTALLY WRONG!!!
-    LLIteratorGetPayload(it, (LLPayload_t *) &(pos.position));
+    uint32_t payload;
+ // is this call correct???
+    LLIteratorGetPayload(it, (LLPayload_t *) &payload);
+
+    pos.position = payload;
 
     // Truncate to 32 bits, then convert it to network order and write it out.
     // MISSING:
     pos.toDiskFormat();
 // THIS MIGHT ALSO BE TOTALLY WRONG!    
     // do i need to cast & truncate if docpositionoffset_t = uint32_t? (memindex.h)
-    res = fwrite(&pos.position, sizeof(uint32_t), 1, f);
+    // &payload or &pos.position ???
+    res = fwrite(&payload, sizeof(uint32_t), 1, f);
+    if (res != 1) {
+      return 0;
+    }
 
     // Iterate to the next position.
     LLIteratorNext(it);
@@ -342,13 +349,11 @@ static HWSize_t WriteHeader(FILE *f,
 
   // MISSING:
 
-// returns # of header bytes written, or 0 on failure
-  
-
   IndexFileOffset_t offset = sizeof(header); // should equal 16???
   int seek = fseek(f, offset, SEEK_SET);
-  // return 0???
-  Verify333(seek == 0);
+  if (seek != 0) {
+    return 0;
+  } 
 
   for (HWSize_t i = 0; i < cslen; i++) {
     uint8_t next;
@@ -358,13 +363,11 @@ static HWSize_t WriteHeader(FILE *f,
   }
   uint32_t finalCRC = crcobj.GetFinalCRC();
 
-
+  header.checksum = finalCRC;
 
   // Write the header fields.  Be sure to convert the fields to
   // network order before writing them!
   header.toDiskFormat();
-
-header.checksum = finalCRC;
 
   if (fseek(f, 0, SEEK_SET) != 0)
     return 0;
@@ -439,21 +442,12 @@ static HWSize_t WriteBucket(FILE *f,
       HTKeyValue *kv;
 
       // MISSING:
-      // Probably really wrong...
       //res = fseek(f, offset + j*sizeof(BucketListHeader), SEEK_SET);
-//      BucketListHeader header = {chainlen_ho};
-//      header.toDiskFormat();
-//      if (fwrite(&header, sizeof(BucketListHeader), 1, f) != 0) {
-//        printf("problem???\n");
-// break?
-//        //return 0; // ???
-//      }
-
       element_position_rec epr = {nextelpos};
       epr.toDiskFormat();
       res = fwrite(&epr, sizeof(element_position_rec), 1, f);
       if (res != 1) {
-        printf("probelm?\n");
+        printf("returning 0\n");
         return 0;
       }
 
@@ -519,14 +513,17 @@ static HWSize_t WriteHashTable(FILE *f,
   // record for the bucket, but you won't write a "bucket".
   for (i = 0; i < ht->num_buckets; i++) {
     // MISSING:
-      res = WriteBucketRecord(f, *ht->buckets, next_bucket_rec_offset, next_bucket_offset);
+
+    // do I need to seek???
+    // buckets[i] or *ht->buckets???
+      res = WriteBucketRecord(f, ht->buckets[i], next_bucket_rec_offset, next_bucket_offset);
       if (res == 0) {
         return 0;
       }
+  // do i need to seek?
       next_bucket_rec_offset += res;
-      // DO I NEED TO LOOP THROUGH ELEMENTS???
-      if (ht->num_elements > 0) {
-        res = WriteBucket(f, *ht->buckets, next_bucket_offset, fn);
+      if (NumElementsInLinkedList(ht->buckets[i]) > 0) {
+        res = WriteBucket(f, ht->buckets[i], next_bucket_offset, fn);
         if (res == 0) {
           return 0;
         }
