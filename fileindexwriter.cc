@@ -125,7 +125,7 @@ HWSize_t WriteIndex(MemIndex mi, DocTable dt, const char *filename) {
   filesize += dtres;
 
   // write the memindex using WriteMemIndex().
-  // MISSING: CHECK
+  // MISSING:
   // dtres = size of doctable
   // mires = size of memindex
   // offset 16 bytes for header(magic num, checksum, doctablesize, indexsize)
@@ -139,7 +139,7 @@ HWSize_t WriteIndex(MemIndex mi, DocTable dt, const char *filename) {
   filesize += mires;
 
   // write the header using WriteHeader().
-  // MISSING: CHECK
+  // MISSING:
   int numHeaderBytes = WriteHeader(f, dtres, mires);
 //check for MAGIC_NUMBER? no probs not
   if (numHeaderBytes == 0) {
@@ -250,7 +250,7 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
     pos.toDiskFormat();
 // THIS MIGHT ALSO BE TOTALLY WRONG!    
     // do i need to cast & truncate if docpositionoffset_t = uint32_t? (memindex.h)
-    res = fwrite((uint32_t*)pos.position, sizeof(uint32_t), 1, f);
+    res = fwrite(&pos.position, sizeof(uint32_t), 1, f);
 
     // Iterate to the next position.
     LLIteratorNext(it);
@@ -259,7 +259,7 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
 
   // Calculate and return the total amount of data written.
   // MISSING (fix this return value):
-  // should cast terms separately
+  // should cast terms separately?
   return (HWSize_t) (sizeof(header) + (sizeof(uint32_t) * num_pos_ho));
 }
 
@@ -340,20 +340,25 @@ static HWSize_t WriteHeader(FILE *f,
   HWSize_t cslen = doct_size + memidx_size;
   CRC32 crcobj;
 
-  // TODO MISSING:
+  // MISSING:
 
 // returns # of header bytes written, or 0 on failure
-  IndexFileOffset_t offset = sizeof(header); // should equal 16???
+  
 
-  for (int i = 0; i < cslen; i++) {
+  IndexFileOffset_t offset = sizeof(header); // should equal 16???
+  int seek = fseek(f, offset, SEEK_SET);
+  // return 0???
+  Verify333(seek == 0);
+
+  for (HWSize_t i = 0; i < cslen; i++) {
     uint8_t next;
-    int seek = fseek(f, offset, SEEK_SET);
-    //Verify333(seek == 0);
-    int read = fread((void *) &next, sizeof(char), 1, f);
-    //Verify333(read == 0);
+    int read = fread(&next, sizeof(char), 1, f);
+    Verify333(read == 1);
     crcobj.FoldByteIntoCRC(next);//verification? using finalized???
   }
   uint32_t finalCRC = crcobj.GetFinalCRC();
+
+
 
   // Write the header fields.  Be sure to convert the fields to
   // network order before writing them!
@@ -436,22 +441,18 @@ static HWSize_t WriteBucket(FILE *f,
       // MISSING:
       // Probably really wrong...
       //res = fseek(f, offset + j*sizeof(BucketListHeader), SEEK_SET);
-      if (res != 0) {
-        printf("do something\n");
-        return 0;
-      }
-
 //      BucketListHeader header = {chainlen_ho};
 //      header.toDiskFormat();
 //      if (fwrite(&header, sizeof(BucketListHeader), 1, f) != 0) {
 //        printf("problem???\n");
-//        break; //????????/
+// break?
 //        //return 0; // ???
 //      }
 
       element_position_rec epr = {nextelpos};
       epr.toDiskFormat();
-      if (fwrite(&epr, sizeof(element_position_rec), 1, f) != 1) {
+      res = fwrite(&epr, sizeof(element_position_rec), 1, f);
+      if (res != 1) {
         printf("probelm?\n");
         return 0;
       }
@@ -461,7 +462,7 @@ static HWSize_t WriteBucket(FILE *f,
     //write elem at nextelpos     
 
       //kv->key = ???
-      LLIteratorGetPayload(it, &(kv->value));
+      LLIteratorGetPayload(it, (LLPayload_t *) &kv);
 
       ellen = fn(f, nextelpos, kv);
       
@@ -517,8 +518,20 @@ static HWSize_t WriteHashTable(FILE *f,
   // empty.  For that case, you still have to write a "bucket_rec"
   // record for the bucket, but you won't write a "bucket".
   for (i = 0; i < ht->num_buckets; i++) {
-    // TO DO MISSING:
-  
+    // MISSING:
+      res = WriteBucketRecord(f, *ht->buckets, next_bucket_rec_offset, next_bucket_offset);
+      if (res == 0) {
+        return 0;
+      }
+      next_bucket_rec_offset += res;
+      // DO I NEED TO LOOP THROUGH ELEMENTS???
+      if (ht->num_elements > 0) {
+        res = WriteBucket(f, *ht->buckets, next_bucket_offset, fn);
+        if (res == 0) {
+          return 0;
+        }
+        next_bucket_offset += res;
+      }
   }
 
   // Calculate and return the total number of bytes written.
