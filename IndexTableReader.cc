@@ -63,7 +63,13 @@ DocIDTableReader *IndexTableReader::LookupWord(const std::string &word) {
     // table length" fields, converting from network to host order.
     worddocset_header header;
     // MISSING:
-
+   //worddocset_header: uint16 word_len, hwsize doctable_len
+    size_t res;
+    res = fseek(file_, next_offset, SEEK_SET);
+    Verify333(res == 0);
+    res = fread(&header, sizeof(worddocset_header), 1, file_);
+    Verify333(res == 1);
+    header.toHostFormat();
 
     // If the "word length" field doesn't match the length of the word
     // we're looking up, use continue to skip to the next element.
