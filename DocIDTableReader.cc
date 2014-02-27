@@ -86,7 +86,6 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
 
       // MISSING:
       *ret_list = retval;
-
       return true;
     }
   }
@@ -106,15 +105,19 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
     // Seek to the next bucket_rec.  The "offset_" member
     // variable stores the offset of this docid table within
     // the index file .
-//NOTE: passes docid test before implmenting any of the following missings
-    // MISSING:
 
+//NOTE: passes docid test before implementing any of the following missings
+    // MISSING:
+    size_t res = fseek(file_, offset_ + i * sizeof(bucket_rec), SEEK_SET);
+    Verify333(res == 0);
 
     // Read in the chain length and bucket position fields from
     // the bucket_rec.
     bucket_rec b_rec;
     // MISSING:
-
+    res = fread(&b_rec, sizeof(b_rec), 1, file_);
+    Verify333(res == 1);
+    b_rec.toHostFormat();
 
     // Sweep through the next bucket, iterating through each
     // chain element in the bucket.
@@ -126,14 +129,21 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
       // Read the next element position from the bucket header.
       element_position_rec  ep;
       // MISSING:
+      res = fread(&ep, sizeof(element_position_rec), 1, file_);
+      Verify333(res == 1);
+      ep.toHostFormat();
 
       // Seek to the element itself.
       // MISSING:
+      res = fseek(file_, ep.element_position, SEEK_SET);
+      Verify333(res == 0);
 
       // Read in the docid and number of positions from the element.
       docid_element_header doc_el;
       // MISSING:
-
+      res = fread(&doc_el, sizeof(docid_element_header), 1, file_);
+      Verify333(res == 1);
+      doc_el.toHostFormat();
 
       // Append it to our result list.
       docidlist.push_back(doc_el);
