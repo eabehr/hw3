@@ -76,15 +76,26 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
   // final result is vector of files that match query?
  // for (HWSize_t ind = 0; ind < arraylen_; ind++) {
   
-  DocIDTableReader *initialSet = itr_array_[0]->LookupWord(query[0]);
-  if (initialSet == NULL) {
+//search for 1st word
+  size_t startidx;
+  DocIDTableReader *initialset;
+  for (startidx = 0; startidx < arraylen_; startidx++) {
+    initialset = itr_array_[startidx]->LookupWord(query[0]);
+    if (initialset == NULL) {
+      continue;
+    } else {
+      break;
+    }
+  }
+  // word not found in any index
+  if (initialset == NULL) {
     return finalresult;
   }
-  list<docid_element_header> initialdocs = initialSet->GetDocIDList();
+  list<docid_element_header> initialdocs = initialset->GetDocIDList();
 
   size_t numwords = query.size();
-  for (size_t w = 1; w < numwords; w++) {
-    for (HWSize_t ind = 0; ind < arraylen_; ind++) {
+  for (size_t w = 1; w < numwords; w++) { // loop over words in query
+    for (HWSize_t ind = startidx; ind < arraylen_; ind++) { // loop over index readers
       DocIDTableReader *ditr = itr_array_[ind]->LookupWord(query[w]);
       if (ditr == NULL) { //word not found in that index
         continue;
