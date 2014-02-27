@@ -97,7 +97,7 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
 
 list<docid_element_header> DocIDTableReader::GetDocIDList() {
   // This will be our returned list of docIDs within this table.
-  list<docid_element_hearet_list = retval;der> docidlist;
+  list<docid_element_header> docidlist;
 
   // Go through *all* of the buckets of this hashtable, extracting
   // out the docids in each element and the number of word positions
@@ -106,6 +106,7 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
     // Seek to the next bucket_rec.  The "offset_" member
     // variable stores the offset of this docid table within
     // the index file .
+//NOTE: passes docid test before implmenting any of the following missings
     // MISSING:
 
 
