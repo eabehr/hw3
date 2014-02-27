@@ -82,6 +82,9 @@ DocIDTableReader *IndexTableReader::LookupWord(const std::string &word) {
     std::stringstream ss;
     for (int i = 0; i < header.word_len; i++) {
       // MISSING:
+      uint8_t nextc;
+      Verify333(fread(&nextc, 1, 1, file_) == 1);
+      ss << nextc;      
     }
 
     // Use ss.str() to extract a std::string from the stringstream,
