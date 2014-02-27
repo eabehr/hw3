@@ -20,7 +20,7 @@
 
 #include <iostream>
 #include <algorithm>
-
+#include <list>
 #include "./QueryProcessor.h"
 
 extern "C" {
@@ -73,7 +73,53 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
   vector<QueryProcessor::QueryResult> finalresult;
 
   // MISSING:
+  // final result is vector of files that match query?
+ // for (HWSize_t ind = 0; ind < arraylen_; ind++) {
+  
+  DocIDTableReader *initialSet = itr_array_[0]->LookupWord(query[0]);
+  if (initialSet == NULL) {
+    return finalresult;
+  }
+  list<docid_element_header> initialdocs = initialSet->GetDocIDList();
 
+  size_t numwords = query.size();
+  for (size_t w = 1; w < numwords; w++) {
+    for (HWSize_t ind = 0; ind < arraylen_; ind++) {
+      DocIDTableReader *ditr = itr_array_[ind]->LookupWord(query[w]);
+      if (ditr == NULL) { //word not found in that index
+        continue;
+      }
+      list<docid_element_header> tempdocs = ditr->GetDocIDList();
+      //iterate through initial docs, increment num_pos if its in there
+      std::list<docid_element_header>::iterator iter;
+      for (iter = initialdocs.begin(); iter != initialdocs.end();) {  
+        bool isInTemp = false;
+        for (docid_element_header temp : tempdocs) {
+          if (temp.docid == iter->docid) {
+            isInTemp = true;
+            iter->num_positions += temp.num_positions;
+            break;
+          }
+        }
+        if(!isInTemp) {
+          //delete that docid_element_header
+          initialdocs.erase(iter);
+        } else {
+          iter++;
+        }
+      }
+    }
+  }
+  // now initialdocs is list of docid_element_header{docid, num_positions}
+  // of docs with all query words
+  std::list<docid_element_header>::iterator finaliter;
+  for (finaliter = initialdocs.begin(); finaliter != initialdocs.end(); finaliter++) {
+    HWSize_t currank = finaliter->num_positions;
+    // get doc name
+    // make query result with rank and docname
+    //QueryResult qr = new QueryResult{
+
+  }
 
   // Sort the final results.
   std::sort(finalresult.begin(), finalresult.end());
