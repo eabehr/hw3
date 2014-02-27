@@ -51,6 +51,13 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
     // Slurp the next docid out of the element.
     docid_element_header header;
     // MISSING:
+    // {docid, num_positions}
+    size_t res;
+    res = fseek(file_, next_offset, SEEK_SET);
+    Verify333(res == 0);
+    res = fread(&header, sizeof(docid_element_header), 1, file_);
+    Verify333(res == 1);
+    header.toHostFormat();
 
     // Is it a match?
     if (header.docid == docid) {
@@ -61,13 +68,24 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
 
       // MISSING:
 
+      // am i supposed to make this list???
+      std::list<DocPositionOffset_t> retval;
 
-
+      for(HWSize_t i; i < header.num_positions; i++) {
+        docid_element_position pos;          //i * 4,
+        res = fseek(file_, next_offset + 8 + i*sizeof(docid_element_position), SEEK_SET);
+        Verify333(res == 0);
+        res = fread(&pos, sizeof(docid_element_position), 1, file_);
+        Verify333(res == 1);
+        
+        pos.toHostFormat();
+        retval.push_back(pos.position);
+      }
       // Return the positions list through the output parameter,
       // and return true.
 
       // MISSING:
-
+      *ret_list = retval;
 
       return true;
     }
@@ -79,7 +97,7 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
 
 list<docid_element_header> DocIDTableReader::GetDocIDList() {
   // This will be our returned list of docIDs within this table.
-  list<docid_element_header> docidlist;
+  list<docid_element_hearet_list = retval;der> docidlist;
 
   // Go through *all* of the buckets of this hashtable, extracting
   // out the docids in each element and the number of word positions
