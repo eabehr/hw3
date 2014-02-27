@@ -51,7 +51,6 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
     // Slurp the next docid out of the element.
     docid_element_header header;
     // MISSING:
-    // {docid, num_positions}
     size_t res;
     res = fseek(file_, next_offset, SEEK_SET);
     Verify333(res == 0);
@@ -73,7 +72,9 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
 
       for(HWSize_t i; i < header.num_positions; i++) {
         docid_element_position pos;          //i * 4,
-        res = fseek(file_, next_offset + 8 + i*sizeof(docid_element_position), SEEK_SET);
+        // double check this seek
+        res = fseek(file_, next_offset + sizeof(docid_element_header) 
+                  + i*sizeof(docid_element_position), SEEK_SET);
         Verify333(res == 0);
         res = fread(&pos, sizeof(docid_element_position), 1, file_);
         Verify333(res == 1);
