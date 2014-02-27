@@ -109,7 +109,8 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
 
 //NOTE: passes docid test before implementing any of the following missings
     // MISSING:
-    size_t res = fseek(file_, offset_ + i * sizeof(bucket_rec), SEEK_SET);
+    // is the fseek right???
+    size_t res = fseek(file_, offset_ + 4 + i * sizeof(bucket_rec), SEEK_SET);
     Verify333(res == 0);
 
     // Read in the chain length and bucket position fields from
@@ -133,7 +134,6 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
       res = fread(&ep, sizeof(element_position_rec), 1, file_);
       Verify333(res == 1);
       ep.toHostFormat();
-
       // Seek to the element itself.
       // MISSING:
       res = fseek(file_, ep.element_position, SEEK_SET);
