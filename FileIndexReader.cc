@@ -43,25 +43,10 @@ FileIndexReader::FileIndexReader(std::string filename,
   // Make the (FILE *) be unbuffered.  ("man setbuf")
   // MISSING:
   setbuf(file_, NULL);
-//fopen returns file*
 
   // Read the entire file header and convert to host format.
   // MISSING:
 
-/*
-  uint32_t magic_number, checksum;
-  HWSize_t doctable_size, index_size;
-
-  res = fread(&magic_number, 4, 1, file_); // read magic number
-  Verify333(res == 1);
-  res = fread(&checksum, 4, 1, file_);
-  Verify333(res == 1);
-  res = fread(&doctable_size, 4, 1, file_);
-  Verify333(res == 1);
-  res = fread(&index_size, 4, 1, file_);
-  Verify333(res == 1);
-  header_ = {magic_number, checksum, doctable_size, index_size};
-*/
   size_t res;
   res = fread(&header_, 16, 1, file_);
   Verify333(res == 1);

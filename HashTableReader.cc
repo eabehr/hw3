@@ -119,10 +119,12 @@ HashTableReader::LookupElementPositions(HTKey_t hashKey) {
   res = fseek(file_, b_rec.bucket_position, SEEK_SET); //SEEK_SET or something else???
   Verify333(res == 0);
   for(HWSize_t i = 0; i < b_rec.chain_len; i++) {
-    IndexFileOffset_t elem_offset;
+    //IndexFileOffset_t elem_offset;
+    element_position_rec elem_offset;
     res = fread(&elem_offset, 4, 1, file_);
     Verify333(res == 1);  
-    retval.push_back(elem_offset);
+    elem_offset.toHostFormat();
+    retval.push_back(elem_offset.element_position);
   }
 
 
