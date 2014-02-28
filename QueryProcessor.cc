@@ -94,13 +94,14 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
     for (size_t word = 1; word < numwords; word++) {
       // docidtablereader for next word
       DocIDTableReader *next_ditr = itr_array_[idx]->LookupWord(query[word]);
+      list<docid_element_header> tempdocs;
       if (next_ditr == NULL) {
-        // word not found, move on to next index
-        break;
-      }
+        // word not found
+        tempdocs = {};
+      } else {
       // docid_element_header list for next word in query
-      list<docid_element_header> tempdocs = next_ditr->GetDocIDList();
-
+        tempdocs = next_ditr->GetDocIDList();
+      }
         // we have list for first word, list for next word. we want to delete
         // from our init list the docs that do not contain both words
         std::list<docid_element_header>::iterator iter;
