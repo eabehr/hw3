@@ -1,5 +1,10 @@
 /*
- * Copyright 2011 Steven Gribble
+ *  Emily Behrendt
+ *  eabehr, 1128821
+ *  Thursday February 27, 2014
+ *  CSE 333 Homework 3
+ *
+ *  Copyright 2011 Steven Gribble
  *
  *  This file is part of the UW CSE 333 course project sequence
  *  (333proj).
@@ -101,10 +106,11 @@ int main(int argc, char **argv) {
     idxlist.push_back(argv[i]);
   }
 
-  hw3::QueryProcessor qp(idxlist); 
+  hw3::QueryProcessor qp(idxlist);
 
   std::cout << "Enter query:" << std::endl;
 
+  // process queries as long as user keeps entering them
   while (1) {
     // read whitespace separated list of words from std::cin
     string input;
@@ -126,18 +132,19 @@ int main(int argc, char **argv) {
 
     // process query
     vector<hw3::QueryProcessor::QueryResult> results = qp.ProcessQuery(query);
-    
+
     // print query results to std::cout
     size_t resultlen = results.size();
-    for (size_t i = 0; i < resultlen; i++) {
-      std::cout << "\t" << results[i].document_name << " ("
-              << results[i].rank << ")" << std::endl;
+    if (resultlen == 0) {
+      std::cout << "  [no results]" << std::endl;
+    } else {
+      for (size_t i = 0; i < resultlen; i++) {
+        std::cout << "  " << results[i].document_name << " ("
+                << results[i].rank << ")" << std::endl;
+      }
     }
-
     std::cout << "Enter query:" << std::endl;
   }
-
-  //delete qp;
 
   return EXIT_SUCCESS;
 }
