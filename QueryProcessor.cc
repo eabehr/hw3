@@ -127,7 +127,9 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
             iter++;
           }
         }
+      delete next_ditr;
     }
+    delete first_ditr;
 
     // now we have looped through all the query words for this specific index
     // we must make a QueryResult for each docid left in initialdocs
