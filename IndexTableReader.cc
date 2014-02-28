@@ -1,5 +1,10 @@
 /*
- * Copyright 2011 Steven Gribble
+ *  Emily Behrendt
+ *  eabehr, 1128821
+ *  Thursday February 27, 2014
+ *  CSE 333 Homework 3
+ *
+ *  Copyright 2011 Steven Gribble
  *
  *  This file is part of the UW CSE 333 course project sequence
  *  (333proj).
@@ -63,7 +68,6 @@ DocIDTableReader *IndexTableReader::LookupWord(const std::string &word) {
     // table length" fields, converting from network to host order.
     worddocset_header header;
     // MISSING:
-   //worddocset_header: uint16 word_len, hwsize doctable_len
     size_t res;
     res = fseek(file_, next_offset, SEEK_SET);
     Verify333(res == 0);
@@ -83,8 +87,8 @@ DocIDTableReader *IndexTableReader::LookupWord(const std::string &word) {
     for (int i = 0; i < header.word_len; i++) {
       // MISSING:
       uint8_t nextc;
-      Verify333(fread(&nextc, 1, 1, file_) == 1);
-      ss << nextc;      
+      Verify333(fread(&nextc, sizeof(uint8_t), 1, file_) == 1);
+      ss << nextc;
     }
 
     // Use ss.str() to extract a std::string from the stringstream,

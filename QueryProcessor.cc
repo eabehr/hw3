@@ -1,5 +1,10 @@
 /*
- * Copyright 2011 Steven Gribble
+ *  Emily Behrendt
+ *  eabehr, 1128821
+ *  Thursday February 27, 2014
+ *  CSE 333 Homework 3
+ *
+ *  Copyright 2011 Steven Gribble
  *
  *  This file is part of the UW CSE 333 course project sequence
  *  (333proj).
@@ -73,7 +78,6 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
   vector<QueryProcessor::QueryResult> finalresult;
 
   // MISSING:
-
   size_t numidx = arraylen_;
   size_t numwords = query.size();
 
@@ -81,53 +85,61 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
     // get docidtable for first word
     DocIDTableReader *first_ditr = itr_array_[idx]->LookupWord(query[0]);
     if (first_ditr == NULL) {
-      continue; // if word 1 not in index, move on to next index
+      // if word 1 not in index, move on to next index
+      continue;
     }
-    // initialdocs contains {docid, num_pos} pairs for word 1
+    // docid_element_header list for first word in query
     list<docid_element_header> initialdocs = first_ditr->GetDocIDList();
 
     for (size_t word = 1; word < numwords; word++) {
       // docidtablereader for next word
       DocIDTableReader *next_ditr = itr_array_[idx]->LookupWord(query[word]);
       if (next_ditr == NULL) {
-        break; // move on to next index ????
+        // word not found, move on to next index
+        break;
       }
-      // pairs for next word
+      // docid_element_header list for next word in query
       list<docid_element_header> tempdocs = next_ditr->GetDocIDList();
 
         // we have list for first word, list for next word. we want to delete
         // from our init list the docs that do not contain both words
         std::list<docid_element_header>::iterator iter;
+
         // for each doc in initial docs, see if contained in new list of docs
         for (iter = initialdocs.begin(); iter != initialdocs.end();) {
-          bool isInTemp = false; // is this word contained in the new list of docs?
+          // is the word contained in the temp list?
+          bool isInTemp = false;
+
           for (docid_element_header temp : tempdocs) {
             if (temp.docid == iter->docid) {
-              //docid is in both sets--> it contains both words
+              // docid is in both sets, so it contains both words
               isInTemp = true;
               // increment num occurences of words
               iter->num_positions += temp.num_positions;
-              break; // can now move on to next word in initialdocs
+              // can now move on to next word in initialdocs
+              break;
             }
           }
           if (!isInTemp) {
-            //doc id is not in both sets! must delete from initialdocs
+            // doc id is not in both sets! must delete from initialdocs
             iter = initialdocs.erase(iter);
-            
           } else {
             iter++;
           }
         }
     }
+
     // now we have looped through all the query words for this specific index
     // we must make a QueryResult for each docid left in initialdocs
-        //size_t numResults = initialdocs.size();
-    DocTableReader *currDTreader = dtr_array_[idx]; //doctablereader for currindex
+    DocTableReader *currDTreader = dtr_array_[idx];
+
     for (docid_element_header elem : initialdocs) {
-      // get doctablereader, find docnames from docid, create queryresult
+      // get doctablereader, find docnames from docid, and
+      // create QueryResult object from that to add to finalresult list
       DocID_t d_id = elem.docid;
       HWSize_t rank = elem.num_positions;
       string docname;
+
       bool found = currDTreader->LookupDocID(d_id, &docname);
       if (found) {
         QueryProcessor::QueryResult res  = {docname, rank};
@@ -135,11 +147,8 @@ QueryProcessor::ProcessQuery(const vector<string> &query) {
       } else {
         continue;
       }
-
     }
-
   }
-
 
   // Sort the final results.
   std::sort(finalresult.begin(), finalresult.end());

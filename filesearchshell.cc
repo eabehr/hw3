@@ -21,6 +21,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <list>
+#include <string>
 
 #include "./QueryProcessor.h"
 
@@ -88,7 +90,27 @@ static void Usage(char *progname) {
 int main(int argc, char **argv) {
   if (argc < 2) Usage(argv[0]);
 
+  // make queryprocessor with list of indexes
+  // call process query
+
+//argc - 1???
+  std::list<string> idxlist;
+  for (int i = 0; i < argc-1; i++) {
+    idxlist.push_back(argv[i]);
+  }
+
+  hw3::QueryProcessor qp(idxlist);
+  
   while (1) {
+
+    std::cout << "Enter query:" << std::endl;
+    // read whitespace separated list of words form std::cin
+    string query;
+    // convert to lowercase
+    // construct vector of C++ strings
+    //process query
+    //print query results to std::cout in proper format
+  
   }
 
   return EXIT_SUCCESS;

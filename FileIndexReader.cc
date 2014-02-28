@@ -1,5 +1,10 @@
 /*
- * Copyright 2011 Steven Gribble
+ *  Emily Behrendt
+ *  eabehr, 1128821
+ *  Thursday February 27, 2014
+ *  CSE 333 Homework 3
+ *  
+ *  Copyright 2011 Steven Gribble
  *
  *  This file is part of the UW CSE 333 course project sequence
  *  (333proj).
@@ -42,19 +47,20 @@ FileIndexReader::FileIndexReader(std::string filename,
 
   // Make the (FILE *) be unbuffered.  ("man setbuf")
   // MISSING:
+
   setbuf(file_, NULL);
 
   // Read the entire file header and convert to host format.
   // MISSING:
 
   size_t res;
-  res = fread(&header_, 16, 1, file_);
+  res = fread(&header_, sizeof(header_), 1, file_);
   Verify333(res == 1);
   header_.toHostFormat();
 
   // Verify that the magic number is correct.  Crash if not.
   // MISSING:
-  Verify333(header_.magic_number == 0xCAFEF00D); // should this be class constant???
+  Verify333(header_.magic_number == 0xCAFEF00D);
 
   // Make sure the index file's length lines up with the header fields.
   struct stat f_stat;
@@ -69,11 +75,9 @@ FileIndexReader::FileIndexReader(std::string filename,
     // Note you don't need to do any host/network order conversion,
     // since we're doing this byte-by-byte.
     CRC32 crcobj;
-    uint8_t buf[512];
     HWSize_t left_to_read = header_.doctable_size + header_.index_size;
     while (left_to_read > 0) {
       // MISSING:
-// SHOULD I BE USING BUF???      
       uint8_t next;
       size_t read = fread(&next, sizeof(char), 1, file_);
       Verify333(read == 1);

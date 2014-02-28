@@ -1,5 +1,10 @@
 /*
- * Copyright 2011 Steven Gribble
+ *  Emily Behrendt
+ *  eabehr, 1128821
+ *  Thursday February 27, 2014
+ *  CSE 333 Homework 3
+ *
+ *  Copyright 2011 Steven Gribble
  *
  *  This file is part of the UW CSE 333 course project sequence
  *  (333proj).
@@ -34,12 +39,10 @@ HashTableReader::HashTableReader(FILE *f, IndexFileOffset_t offset)
 
   // MISSING:
   size_t res;
-  res = fseek(file_, offset_, SEEK_SET); // or should be f and offset?
+  res = fseek(file_, offset_, SEEK_SET);
   Verify333(res == 0);
 
-//BucketListHeader - HWSize_t num_buckets
-  //num_buckets = 4bytes
-  res = fread(&header_, 4, 1, file_);
+  res = fread(&header_, sizeof(BucketListHeader), 1, file_);
   Verify333(res == 1);
   header_.toHostFormat();
 }
@@ -87,7 +90,7 @@ HashTableReader::LookupElementPositions(HTKey_t hashKey) {
   HWSize_t bucket_num = hashKey % header_.num_buckets;
 
   // Figure out the offset of the "bucket_rec" field for this bucket.
-  IndexFileOffset_t bucketrec_offset =   offset_ 
+  IndexFileOffset_t bucketrec_offset =   offset_
                                        + sizeof(BucketListHeader)
                                        + sizeof(bucket_rec) * bucket_num;
 
@@ -95,14 +98,12 @@ HashTableReader::LookupElementPositions(HTKey_t hashKey) {
   // bucket_rec record, and convert from network to host order.
   bucket_rec b_rec;
   // MISSING:
-    //bucket_rec = {hwsizet chain_len, indexfileoffset_t bucket_position}
-  //instructions mean fread right?
   size_t res;
   res = fseek(file_, bucketrec_offset, SEEK_SET);
   Verify333(res == 0);
   res = fread(&b_rec, sizeof(bucket_rec), 1, file_);
   Verify333(res == 1);
-  b_rec.toHostFormat(); 
+  b_rec.toHostFormat();
 
   // This will be our returned list of element positions.
   std::list<IndexFileOffset_t> retval;
@@ -116,17 +117,15 @@ HashTableReader::LookupElementPositions(HTKey_t hashKey) {
   // the returned list.  Be sure to insert into the list in the
   // correct order (i.e., append to the end of the list).
   // MISSING:
-  res = fseek(file_, b_rec.bucket_position, SEEK_SET); //SEEK_SET or something else???
+  res = fseek(file_, b_rec.bucket_position, SEEK_SET);
   Verify333(res == 0);
-  for(HWSize_t i = 0; i < b_rec.chain_len; i++) {
-    //IndexFileOffset_t elem_offset;
+  for (HWSize_t i = 0; i < b_rec.chain_len; i++) {
     element_position_rec elem_offset;
     res = fread(&elem_offset, 4, 1, file_);
-    Verify333(res == 1);  
+    Verify333(res == 1);
     elem_offset.toHostFormat();
     retval.push_back(elem_offset.element_position);
   }
-
 
   // Return the list.
   return retval;

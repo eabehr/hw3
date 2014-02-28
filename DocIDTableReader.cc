@@ -1,5 +1,10 @@
 /*
- * Copyright 2011 Steven Gribble
+ *  Emily Behrendt
+ *  eabehr, 1128821
+ *  Thursday February 27, 2014
+ *  CSE 333 Homework 3
+ *
+ *  Copyright 2011 Steven Gribble
  *
  *  This file is part of the UW CSE 333 course project sequence
  *  (333proj).
@@ -66,19 +71,16 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
       // successive positions.
 
       // MISSING:
-
-      // am i supposed to make this list???
       std::list<DocPositionOffset_t> retval;
 
-      for(HWSize_t i; i < header.num_positions; i++) {
-        docid_element_position pos;          //i * 4,
-        // double check this seek
-        res = fseek(file_, next_offset + sizeof(docid_element_header) 
-                  + i*sizeof(docid_element_position), SEEK_SET);
+      for (HWSize_t i; i < header.num_positions; i++) {
+        docid_element_position pos;
+        res = fseek(file_, next_offset + sizeof(docid_element_header)
+                  + i * sizeof(docid_element_position), SEEK_SET);
         Verify333(res == 0);
         res = fread(&pos, sizeof(docid_element_position), 1, file_);
         Verify333(res == 1);
-        
+
         pos.toHostFormat();
         retval.push_back(pos.position);
       }
@@ -107,10 +109,9 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
     // variable stores the offset of this docid table within
     // the index file .
 
-//NOTE: passes docid test before implementing any of the following missings
     // MISSING:
-    // is the fseek right???
-    size_t res = fseek(file_, offset_ + 4 + i * sizeof(bucket_rec), SEEK_SET);
+    size_t res = fseek(file_, offset_ + sizeof(BucketListHeader)
+                + i * sizeof(bucket_rec), SEEK_SET);
     Verify333(res == 0);
 
     // Read in the chain length and bucket position fields from
