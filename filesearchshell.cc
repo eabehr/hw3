@@ -24,6 +24,13 @@
 #include <list>
 #include <string>
 
+#include <sstream>
+#include <algorithm>
+#include <iterator>
+#include <stdio.h>
+#include <string.h>
+#include <locale>
+
 #include "./QueryProcessor.h"
 
 static void Usage(char *progname) {
@@ -87,31 +94,65 @@ static void Usage(char *progname) {
 // a stringstream gets the job done too.)
 //
 // Good luck, and write beautiful code!
+
+using namespace std;
+
 int main(int argc, char **argv) {
   if (argc < 2) Usage(argv[0]);
 
   // make queryprocessor with list of indexes
   // call process query
 
-//argc - 1???
-  std::list<string> idxlist;
-  for (int i = 0; i < argc-1; i++) {
+//argc - 1??? start at i=1???
+  list<string> idxlist;
+  for (int i = 1; i < argc; i++) {
     idxlist.push_back(argv[i]);
   }
 
-  hw3::QueryProcessor qp(idxlist);
-  
-  while (1) {
+  hw3::QueryProcessor qp(idxlist); 
 
-    std::cout << "Enter query:" << std::endl;
-    // read whitespace separated list of words form std::cin
-    string query;
-    // convert to lowercase
-    // construct vector of C++ strings
-    //process query
-    //print query results to std::cout in proper format
+//  while (1) {
+
+    // read whitespace separated list of words from std::cin
+    string input;
+    cout << "Enter query:" << endl;
+    getline(cin, input);
+      //cout << input << endl;
+
+    // convert to lower case
+    locale loc; //what is this???
+    string input_to_lower;
+    for (size_t i = 0; i < input.length(); i++) {
+      input_to_lower += tolower(input[i], loc);
+    }
+      cout << "Input " << input_to_lower << endl;
+
+    // construct vector of strings
+    istringstream iss(input_to_lower);
+    vector<string> query;
+    copy(istream_iterator<string>(iss),
+        istream_iterator<string>(),
+        back_inserter<vector<string> >(query));
+
+    cout << "numwords: " << query.size() << endl;
+
+    // process query
+    vector<hw3::QueryProcessor::QueryResult> results = qp.ProcessQuery(query);
+    
+    // print query results to std::cout
+    size_t resultlen = results.size();
+    for(size_t i = 0; i < resultlen; i++) {
+      cout << "\t" << results[i].document_name << " (" << results[i].rank << ")" << endl;
+    }  
+
+    /*vector<hw3::QueryProcessor::QueryResult>::iterator iter;
+    for (iter = results.begin(); iter != results.end();); {//++i or i++
+      cout << iter->document_name << " (" << iter->rank << ")" << endl;
+    iter++;
+    }
+*/
   
-  }
+//  }
 
   return EXIT_SUCCESS;
 }
