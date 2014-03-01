@@ -114,7 +114,10 @@ int main(int argc, char **argv) {
   while (1) {
     // read whitespace separated list of words from std::cin
     string input;
-    std::getline(std::cin, input);
+
+    if (std::getline(std::cin, input) == 0) {
+      break;
+    }
 
     // convert to lower case
     std::locale loc;
@@ -131,20 +134,23 @@ int main(int argc, char **argv) {
         std::back_inserter<vector<string> >(query));
 
     // process query
-    vector<hw3::QueryProcessor::QueryResult> results = qp.ProcessQuery(query);
+    if (query.size() > 0) {
+      vector<hw3::QueryProcessor::QueryResult> results = qp.ProcessQuery(query);
 
-    // print query results to std::cout
-    size_t resultlen = results.size();
-    if (resultlen == 0) {
-      std::cout << "  [no results]" << std::endl;
-    } else {
-      for (size_t i = 0; i < resultlen; i++) {
-        std::cout << "  " << results[i].document_name << " ("
-                << results[i].rank << ")" << std::endl;
+      // print query results to std::cout
+      size_t resultlen = results.size();
+      if (resultlen == 0) {
+        std::cout << "  [no results]" << std::endl;
+      } else {
+        for (size_t i = 0; i < resultlen; i++) {
+          std::cout << "  " << results[i].document_name << " ("
+            << results[i].rank << ")" << std::endl;
+        }
       }
     }
+
     std::cout << "Enter query:" << std::endl;
   }
 
   return EXIT_SUCCESS;
-}
+  }

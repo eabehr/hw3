@@ -60,7 +60,7 @@ FileIndexReader::FileIndexReader(std::string filename,
 
   // Verify that the magic number is correct.  Crash if not.
   // MISSING:
-  Verify333(header_.magic_number == 0xCAFEF00D);
+  Verify333(header_.magic_number == MAGIC_NUMBER);
 
   // Make sure the index file's length lines up with the header fields.
   struct stat f_stat;
